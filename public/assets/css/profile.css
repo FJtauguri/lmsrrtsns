@@ -1,0 +1,59 @@
+#username,
+#password,
+#first-name,
+#middle-name,
+#last-name,
+#image,
+#section,
+#grade,
+#studsection,
+#studgrade,
+#studimage,
+#address
+{
+    display: flex;
+    justify-content: space-between;
+}
+
+#image {
+    margin-top: 20%;
+}
+
+#section {
+    margin-top: 20%;
+}
+
+#section, 
+#grade {
+    display: flex;
+    height: 50px;
+}
+
+#section_box {
+    padding: 0 0 0 30px;
+    height: 100px;
+    /* background-color: aquamarine; */
+    overflow-y: auto;
+}
+
+#grade_box {
+    padding: 0 0 0 38px;
+    height: 100px;
+    /* background-color: aquamarine; */
+    overflow-y: auto;
+}
+
+#left-profile {
+    grid-row-gap: 5px;
+}
+
+#left {
+    margin: 0 0 20px 0;
+    border-radius: 5px;
+}
+
+#masterlists {
+    height: 365px;
+    border: 1px solid #000;
+    overflow-y: scroll;
+}

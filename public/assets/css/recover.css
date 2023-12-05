@@ -1,0 +1,35 @@
+.btn-outline-success-oval {
+    border: solid 1px var(--success);
+    border-radius: .5rem;
+    width: 30rem;
+    height: 20rem;
+    font-size: 2rem;
+    color: var(--dark);
+    font-weight: 300;
+}
+.btn-outline-danger-oval {
+    border: solid 1px var(--danger);
+    border-radius: .5rem;
+    width: 30rem;
+    height: 20rem;
+    font-size: 2rem;
+    color: var(--dark);
+    font-weight: 300;
+}
+    .btn-outline-warning-oval:hover {
+        
+    }
+
+.br-just-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.restore {
+    display: flex;
+}
+
+input[class="backupfn"] {
+    margin-bottom: 10px;
+}
