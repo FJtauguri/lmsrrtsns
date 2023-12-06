@@ -19,8 +19,12 @@ if (isset($_POST['login'])) {
 
         // Verify password
         if ($row && password_verify($password, $row['password'])) {
-            $_SESSION['id'] = $row['user_id'];
+            $_SESSION['user_id'] = $row['user_id'];
             $_SESSION['user'] = 'student';
+
+            // debugging tool, save it for later
+            // echo "User ID in Session: " . $_SESSION['user_id'];
+            // echo "User Type in Session: " . $_SESSION['user'];
 
             // Redirect after successful login
             header("Location: users/student/pages/index.php");

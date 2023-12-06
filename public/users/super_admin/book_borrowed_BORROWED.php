@@ -2,7 +2,38 @@
 <?php
 include('../../../database/connection.php');
 
-  
+if (isset($_POST['return'])) {
+    $borrow_book_id = $_POST['borrow_book_id'];
+
+    $updateSql = "UPDATE borrow_book SET borrowed_status = 'Returned' WHERE borrow_book_id = $borrow_book_id";
+
+    if ($con->query($updateSql) === TRUE) {
+        header("Location: book_borrowed_BORROWED.php");
+        exit();
+    } else {
+        echo "Error updating record: " . $con->error;
+    }
+    $con->close();
+}
+
+
+// for tab
+$current_page = basename($_SERVER['PHP_SELF']);
+
+// Fetch the data from the database
+$sql = "SELECT bb.borrow_book_id, bb.cn, bb.rname, bb.book_id, bb.date_borrowed, bb.due_date, bb.borrowed_status, b.book_title 
+        FROM borrow_book bb 
+        JOIN book b ON bb.borrow_book_id = b.book_id 
+        WHERE bb.borrowed_status = 'Borrowed'";
+
+$result = $con->query($sql);
+
+if ($result->num_rows > 0) {
+    $borrowedBooks = $result->fetch_all(MYSQLI_ASSOC);
+} else {
+    $borrowedBooks = array();
+}
+
 ?>
 <!-- bakaEND -->
 
@@ -114,11 +145,22 @@ include('../../../database/connection.php');
                                             <div class="clearfix"></div>
                                             <ul class="nav nav-pills mb-3 pt-3 pb-3" id="navpillsZ"
                                                 style="border: 1px solid #000; align-items: center;">
-                                                <li id="navpills" role="presentation" class="active"><a
-                                                        href="book_borrowed.php">All</a></li>
-                                                <li id="navpills" role="presentation"><a href="book_borrowed_BORROWED.php">Borrowed</a></li>
-                                                <li id="navpills" role="presentation"><a href="book_borrowed_RETURNED.php">Returned</a></li>
-                                                <li id="navpills" role="presentation"><a href="book_borrowed_REQUEST.php">Request</a></li>
+                                                <li id="navpills" role="presentation"
+                                                    class="<?php echo ($current_page == 'book_borrowed.php') ? 'active' : ''; ?>">
+                                                    <a href="book_borrowed.php">All</a>
+                                                </li>
+                                                <li id="navpills" role="presentation"
+                                                    class="<?php echo ($current_page == 'book_borrowed_REQUEST.php') ? 'active' : ''; ?>">
+                                                    <a href="book_borrowed_REQUEST.php">Request</a>
+                                                </li>
+                                                <li id="navpills" role="presentation"
+                                                    class="<?php echo ($current_page == 'book_borrowed_BORROWED.php') ? 'active' : ''; ?>">
+                                                    <a href="book_borrowed_BORROWED.php">Borrowed</a>
+                                                </li>
+                                                <li id="navpills" role="presentation"
+                                                    class="<?php echo ($current_page == 'book_borrowed_RETURNED.php') ? 'active' : ''; ?>">
+                                                    <a href="book_borrowed_RETURNED.php">Returned</a>
+                                                </li>
                                             </ul>
                                             <div class="clearfix"></div>
                                         </div>
@@ -137,36 +179,70 @@ include('../../../database/connection.php');
                                                             <th>Title</th>
                                                             <th>Date Borrowed</th>
                                                             <th>Due Date</th>
+                                                            <th>Timer Status</th>
                                                             <th>Status</th>
                                                         </tr>
                                                     </thead>
 
                                                     <tbody>
                                                         <?php
-                                                                                                           
+                                                        foreach ($borrowedBooks as $book) {
+                                                            echo '<tr>';
+                                                            echo '<td>' . $book['cn'] . '</td>';
+                                                            echo '<td>' . $book['rname'] . '</td>';
+                                                            echo '<td>' . $book['book_title'] . '</td>';
+                                                            echo '<td>' . $book['date_borrowed'] . '</td>';
+                                                            echo '<td>' . $book['due_date'] . '</td>';
+                                                            $dueDateTimestamp = strtotime($book['due_date']);
+                                                            $nowTimestamp = time();
+                                                            $remainingTime = $dueDateTimestamp - $nowTimestamp;
+
+                                                            if ($remainingTime > 0) {
+                                                                $timerStatus = gmdate("d H:i:s", $remainingTime);
+                                                            } else {
+                                                                $timerStatus = 'Lost';
+                                                            }
+                                                            echo '<td>' . $timerStatus . '</td>';
+                                                            echo '<td class="fs-6">';
+                                                            echo '<a class="btn btn-success" href="#returnModal' . $book['borrow_book_id'] . '" data-toggle="modal" data-target="#returnModal' . $book['borrow_book_id'] . '" style="color: white; width: 80px;">';
+                                                            echo '<i class="glyphicon glyphicon-pencil icon-white"></i>Return</a>';
+                                                            echo '</td>';
+                                                            echo '</tr>';
+                                                            ?>
+                                                            <!-- Return modal for each book -->
+                                                            <div class="modal fade"
+                                                                id="returnModal<?php echo $book['borrow_book_id']; ?>"
+                                                                tabindex="-1" role="dialog"
+                                                                aria-labelledby="returnModalLabel<?php echo $book['borrow_book_id']; ?>"
+                                                                aria-hidden="true">
+                                                                <div class="modal-dialog" role="document">
+                                                                    <div class="modal-content">
+                                                                        <div class="modal-header">
+                                                                            <h5 class="modal-title"
+                                                                                id="returnModalLabel<?php echo $book['borrow_book_id']; ?>">
+                                                                                Return</h5>
+                                                                            <button type="button" class="close"
+                                                                                data-dismiss="modal" aria-label="Close">
+                                                                                <span aria-hidden="true">&times;</span>
+                                                                            </button>
+                                                                        </div>
+                                                                        <div class="modal-body">
+                                                                            <form method="post">
+                                                                                <div class="mb-3">
+                                                                                    <p class="fs-6">Are you sure?</p>
+                                                                                </div>
+                                                                                <input type="hidden" name="borrow_book_id"
+                                                                                    value="<?php echo $book['borrow_book_id']; ?>">
+                                                                                <button name="return" type="submit"
+                                                                                    class="btn btn-primary">Yes</button>
+                                                                            </form>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <?php
+                                                        }
                                                         ?>
-                                                            <tr>
-                                                                
-                                                                <td style="word-wrap: break-word; width: 10em;">
-                                                                    
-                                                                </td>
-                                                                <td style="word-wrap: break-word; width: 10em;">
-                                                                    
-                                                                </td>
-                                                                <td style="word-wrap: break-word; width: 10em;">
-                                                                    
-                                                                </td>
-                                                                <td style="word-wrap: break-word; width: 10em;">
-                                                                    
-                                                                </td>
-                                                                <td style="word-wrap: break-word; width: 10em;">
-                                                                   
-                                                                </td>
-                                                                <td style="word-wrap: break-word; width: 10em;">
-                                                                    
-                                                                </td>
-                                                            </tr>
-                                                        
                                                     </tbody>
 
                                                 </table>

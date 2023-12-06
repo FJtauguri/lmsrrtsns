@@ -21,7 +21,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <ul class="collapse list-unstyled menu <?php echo ($current_page == 'book_lists.php' || $current_page == 'book_borrowed.php' || $current_page == 'book_returned.php') ? 'show' : ''; ?>" id="homeSubmenu1">
                 <li><a class="<?php echo ($current_page == 'book_lists.php') ? 'active' : ''; ?>" href="book_lists.php">Book Lists</a></li>
                 <li><a class="<?php echo ($current_page == 'book_borrowed.php') || ($current_page == 'book_borrowed_BORROWED.php') || ($current_page == 'book_borrowed_RETURNED.php') || ($current_page == 'book_borrowed_REQUEST.php') ? 'active' : ''; ?>" href="book_borrowed.php">Borrowed Books</a></li>
-                <li><a class="<?php echo ($current_page == 'book_returned.php') ? 'active' : ''; ?>" href="book_returned.php">Returned</a></li>
+                <!-- <li><a class="<php echo ($current_page == 'book_returned.php') ? 'active' : ''; ?>" href="book_returned.php">Returned</a></li> -->
             </ul>
         </li>
         <li class="dropdown <?php echo (in_array($current_page, ['admin.php', 'students.php', 'book_returned.php'])) ? 'active show' : ''; ?>">
@@ -31,7 +31,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <ul class="collapse list-unstyled menu <?php echo ($current_page == 'admin.php' || $current_page == 'students.php' || $current_page == 'book_returned.php') ? 'show' : ''; ?>" id="users">
                 <li><a class="<?php echo ($current_page == 'admin.php') ? 'active' : ''; ?>" href="admin.php">Admin</a></li>
                 <li><a class="<?php echo ($current_page == 'students.php') ? 'active' : ''; ?>" href="students.php">Students</a></li>
-                <li><a class="<?php echo ($current_page == 'book_returned.php') ? 'active' : ''; ?>" href="book_returned.php">Returned</a></li>
+                <!-- <li><a class="<php echo ($current_page == 'book_returned.php') ? 'active' : ''; ?>" href="book_returned.php">Returned</a></li> -->
             </ul>
         </li>
         <li class="<?php echo ($current_page == 'backuprestore.php') ? 'active' : ''; ?>">

@@ -2,17 +2,23 @@
 <?php
 include('../../../database/connection.php');
 
-    $where = "";
-    if (isset($_GET['search'])) {
-        $where = " and (date(borrow_book.date_borrowed) between '" . date("Y-m-d", strtotime($_GET['datefrom'])) . "' and '" . date("Y-m-d", strtotime($_GET['dateto'])) . "' ) ";
-    }
+// for tab
+$current_page = basename($_SERVER['PHP_SELF']);
 
-    $return_query = mysqli_query($con, "SELECT * from borrow_book 
-            LEFT JOIN book ON borrow_book.book_id = book.book_id 
-            LEFT JOIN user ON borrow_book.user_id = user.user_id 
-            where borrow_book.borrowed_status = 'Borrowed' $where order by borrow_book.borrow_book_id DESC") or die(mysqli_error());
-    $return_count = mysqli_num_rows($return_query);
-    
+// Fetch the data from the database
+$sql = "SELECT bb.borrow_book_id, bb.cn, bb.rname, bb.book_id, bb.date_borrowed, bb.due_date, bb.borrowed_status, b.book_title 
+        FROM borrow_book bb 
+        JOIN book b ON bb.borrow_book_id = b.book_id 
+        WHERE bb.borrowed_status = 'Returned'";
+
+$result = $con->query($sql);
+
+if ($result->num_rows > 0) {
+    $borrowedBooks = $result->fetch_all(MYSQLI_ASSOC);
+} else {
+    $borrowedBooks = array();
+}
+  
 ?>
 <!-- bakaEND -->
 
@@ -128,6 +134,7 @@ include('../../../database/connection.php');
                                                 <li id="navpills" role="presentation" class="<?php echo ($current_page == 'book_borrowed_REQUEST.php') ? 'active' : ''; ?>"><a href="book_borrowed_REQUEST.php">Request</a></li>
                                                 <li id="navpills" role="presentation" class="<?php echo ($current_page == 'book_borrowed_BORROWED.php') ? 'active' : ''; ?>"><a href="book_borrowed_BORROWED.php">Borrowed</a></li>
                                                 <li id="navpills" role="presentation" class="<?php echo ($current_page == 'book_borrowed_RETURNED.php') ? 'active' : ''; ?>"><a href="book_borrowed_RETURNED.php">Returned</a></li>
+                                                
                                             </ul>
                                             <div class="clearfix"></div>
                                         </div>
@@ -144,45 +151,20 @@ include('../../../database/connection.php');
                                                             <th>CN</th>
                                                             <th>Borrowed Name</th>
                                                             <th>Title</th>
-                                                            <th>Date Borrowed</th>
-                                                            <th>Due Date</th>
                                                             <th>Status</th>
                                                         </tr>
                                                     </thead>
 
                                                     <tbody>
                                                         <?php
-                                                            while ($return_row = mysqli_fetch_array($return_query)) {
-                                                            $id = $return_row['borrow_book_id'];                                                    
-                                                        ?>
-                                                            <tr>
-                                                                
-                                                                <td style="word-wrap: break-word; width: 10em;">
-                                                                    <?php echo $return_row['cn']; ?>
-                                                                </td>
-                                                                <td style="word-wrap: break-word; width: 10em;">
-                                                                    <?php echo $return_row['firstname'] . " " . $return_row['lastname']; ?>
-                                                                </td>
-                                                                <td style="word-wrap: break-word; width: 10em;">
-                                                                    <?php echo $return_row['book_title']; ?>
-                                                                </td>
-                                                                <td style="word-wrap: break-word; width: 10em;">
-                                                                    <?php echo date("M d, Y h:m:s a", strtotime($return_row['date_borrowed'])); ?>
-                                                                </td>
-                                                                <td style="word-wrap: break-word; width: 10em;">
-                                                                    <?php 
-                                                                        if ($return_row['book_penalty'] != 'No Penalty') {
-                                                                            echo "<td class='' style='width:100px;'>" . date("M d, Y h:m:s a", strtotime($return_row['due_date'])) . "</td>";
-                                                                        } else {
-                                                                            echo "<td>" . date("M d, Y h:m:s a", strtotime($return_row['due_date'])) . "</td>";
-                                                                        } 
-                                                                    ?>
-                                                                </td>
-                                                                <td style="word-wrap: break-word; width: 10em;">
-                                                                    <?php echo $return_row['borrowed_status']; ?>
-                                                                </td>
-                                                            </tr>
-                                                        <?php } ?>
+                                                            foreach ($borrowedBooks as $book) {
+                                                                echo '<tr>';
+                                                                echo '<td>' . $book['cn'] . '</td>';
+                                                                echo '<td>' . $book['rname'] . '</td>';
+                                                                echo '<td>' . $book['book_title'] . '</td>';
+                                                                echo '<td class="fs-6">' . $book['borrowed_status'] . '</td>';
+                                                                echo '</tr>';
+                                                            }?>
                                                     </tbody>
 
                                                 </table>

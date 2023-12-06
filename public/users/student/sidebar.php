@@ -1,3 +1,6 @@
+<?php
+$current_page = basename($_SERVER['PHP_SELF']);
+?>
 <nav id="sidebar">
     <div class="sidebar-header">
         <h3>
@@ -6,16 +9,16 @@
         </h3>
     </div>
     <ul class="list-unstyled components">
-        <li class="active">
-            <a href="#" class="dashboard"><i class="material-icons">dashboard</i>
+        <li class="<?php echo ($current_page == 'index.php') ? 'active' : ''; ?>">
+            <a href="index.php" class="dashboard"><i class="material-icons">dashboard</i>
                 <span>Explore</span></a>
         </li>
-        <li class="">
-            <a href="#" class="dashboard"><i class="material-icons">dashboard</i>
-                <span>Borrowed</span></a>
+        <li class="<?php echo ($current_page == 'borrowed.php') ? 'active' : ''; ?>">
+            <a href="borrowed.php" class="dashboard"><i class="material-icons">dashboard</i>
+                <span>Borrow</span></a>
         </li>
-        <li class="">
-            <a href="#" class="dashboard"><i class="material-icons">dashboard</i>
+        <li class="<?php echo ($current_page == 'profile.php') ? 'active' : ''; ?>">
+            <a href="profile.php" class="dashboard"><i class="material-icons">dashboard</i>
                 <span>Profile</span></a>
         </li>
     </ul>

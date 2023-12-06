@@ -1,5 +1,19 @@
 <?php
 include('../../../database/connection.php');
+
+if (isset($_POST['delete_user'])) {
+    $user_id = $_POST['user_id'];
+
+    $delete_query = "DELETE FROM user WHERE user_id = $user_id";
+    $result = mysqli_query($con, $delete_query);
+
+    if ($result) {
+        echo "<script>alert('User deleted successfully');</script>";
+    } else {
+        echo "<script>alert('Error deleting user');</script>";
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -97,7 +111,6 @@ include('../../../database/connection.php');
                         <div class="x_content">
 
                             <!-- content starts here -->
-
                             <div class="table-responsive">
                                 <table cellpadding="0" cellspacing="0" border="0"
                                     class="table table-striped table-bordered" id="example">
@@ -137,47 +150,48 @@ include('../../../database/connection.php');
                                                 <td
                                                     style="word-wrap: break-word; width: 8em; display: inline-flex; justify-content: space-between; flex-direction: row;">
                                                     <a class="btn btn-warning" for="ViewAdmin" style="color: white; width: 80px;
-                                                        href="edit_user.php<?php echo '?user_id=' . $id; ?>">
+                                                        href=" edit_user.php<?php echo '?user_id=' . $id; ?>">
                                                         <i class="glyphicon glyphicon-pencil icon-white"></i>
                                                         Edit
                                                     </a>
                                                     <a class="btn btn-danger" for="DeleteAdmin" style="color: white; width: 80px;
-                                                        href="#delete<?php echo $id; ?>" data-toggle="modal"
+                                                        href=" #delete<?php echo $id; ?>" data-toggle="modal"
                                                         data-target="#delete<?php echo $id; ?>">
                                                         <i class="glyphicon glyphicon-trash icon-white"></i>
                                                         Delete
                                                     </a>
-
-                                                    <!-- delete modal user -->
-                                                    <div class="modal fade" id="delete<?php echo $id; ?>" tabindex="-1"
-                                                        role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                                                        <div class="modal-dialog">
-                                                            <div class="modal-content">
-                                                                <div class="modal-header">
-                                                                    <h4 class="modal-title" id="myModalLabel"><i
-                                                                            class="glyphicon glyphicon-user"></i> User</h4>
-                                                                </div>
-                                                                <div class="modal-body">
-                                                                    <div class="alert alert-danger">
-                                                                        Are you sure you want to delete?
-                                                                    </div>
-                                                                    <div class="modal-footer">
-                                                                        <button class="btn btn-inverse" data-dismiss="modal"
-                                                                            aria-hidden="true"><i
-                                                                                class="glyphicon glyphicon-remove icon-white"></i>
-                                                                            No</button>
-                                                                        <a href="delete_user.php<?php echo '?user_id=' . $id; ?>"
-                                                                            style="margin-bottom:5px;"
-                                                                            class="btn btn-primary"><i
-                                                                                class="glyphicon glyphicon-ok icon-white"></i>
-                                                                            Yes</a>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
                                                 </td>
                                             </tr>
+                                            <!-- delete modal user -->
+                                            <div class="modal fade" id="delete<?php echo $id; ?>" tabindex="-1"
+                                                role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h4 class="modal-title" id="myModalLabel"><i
+                                                                    class="glyphicon glyphicon-user"></i> User</h4>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="alert alert-danger">
+                                                                Are you sure you want to delete?
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button class="btn btn-inverse" data-dismiss="modal"
+                                                                aria-hidden="true">
+                                                                <i class="glyphicon glyphicon-remove icon-white"></i>
+                                                                No
+                                                            </button>
+                                                            <form method="post" action="">
+                                                                <input type="hidden" name="user_id" value="<?php echo $id; ?>">
+                                                                <button type="submit" name="delete_user" style="margin-bottom:5px;" class="btn btn-primary">
+                                                                    <i class="glyphicon glyphicon-ok icon-white"></i> Yes
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         <?php } ?>
                                     </tbody>
                                 </table>
@@ -320,7 +334,7 @@ include('../../../database/connection.php');
                 if (password !== confirmPassword) {
                     passwordError.text("Passwords do not match");
                     $("button[type='submit']").prop("disabled", true);
-                    echo 'we';
+                    // echo 'we+ss';
                 } else {
                     passwordError.text("Nice move!");
                     $("button[type='submit']").prop("disabled", false);

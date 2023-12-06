@@ -1,38 +1,76 @@
 <!-- baka -->
 <?php
 include("../../../../database/connection.php");
+session_start();
+$requesterId = $_SESSION['user_id'];
 
-// fetch the book data
-// $sql = "SELECT * FROM book";
-// $result = $con->query($sql);
 
 // START: for pagination of book display
-    // for pagination s
-    $booksPerPage = 9;
-    $page = isset($_GET['page']) ? $_GET['page'] : 1;
-    $offset = ($page - 1) * $booksPerPage;
+$booksPerPage = 9;
+$page = isset($_GET['page']) ? $_GET['page'] : 1;
+$offset = ($page - 1) * $booksPerPage;
 
-    // Fetch the book data with pagination
-    $sql = "SELECT * FROM book LIMIT $offset, $booksPerPage";
-    $result = $con->query($sql);
+$sql = "SELECT book_id, book_title, author, book_image, cn FROM book LIMIT $offset, $booksPerPage";
+$result = $con->query($sql);
 
-    // Fetch the total number of rows in the book table
-    $totalRowsQuery = "SELECT COUNT(*) as total FROM book";
-    $totalRowsResult = $con->query($totalRowsQuery);
-    $totalRows = $totalRowsResult->fetch_assoc()['total'];
+$totalRowsQuery = "SELECT COUNT(*) as total FROM book";
+$totalRowsResult = $con->query($totalRowsQuery);
+$totalRows = $totalRowsResult->fetch_assoc()['total'];
 
-    // Store the result set in an array formz
-    $booksArray = [];
-    while ($row = $result->fetch_assoc()) {
-        $booksArray[] = $row;
-    }
+$booksArray = [];
+while ($row = $result->fetch_assoc()) {
+    $booksArray[] = $row;
+}
 
-    // Calculate total pages for pagination links
-    $totalPages = ceil($totalRows / $booksPerPage);
+$totalPages = ceil($totalRows / $booksPerPage);
 // END: for pagination of book display
 
+// $sql = "SELECT * FROM book LIMIT $offset, $booksPerPage";
 
 
+if (isset($_POST['borrow'])) {
+    $bookId = $_POST['book_id'];
+    $borrowDays = filter_var($_POST['borrow_days'], FILTER_SANITIZE_NUMBER_INT);
+    $borrowDaysDue = filter_var($_POST['borrow_days'], FILTER_SANITIZE_NUMBER_INT);
+
+    $cnQuery = $con->prepare("SELECT cn FROM book WHERE book_id = ?");
+    $cnQuery->bind_param("i", $bookId);
+    $cnQuery->execute();
+    $cnQuery->store_result();
+    $cnQuery->bind_result($cn);
+    $cnQuery->fetch();
+    $cnQuery->close();
+
+    $userQuery = "SELECT firstname, middlename, lastname FROM user WHERE user_id = ?";
+    $userStatement = $con->prepare($userQuery);
+    $userStatement->bind_param("i", $requesterId);
+    $userStatement->execute();
+    $userStatement->store_result();
+    $userStatement->bind_result($firstname, $middlename, $lastname);
+    $userStatement->fetch();
+    $userStatement->close();
+
+    // $status = 'Pending Request';
+
+    $rname = $firstname . " " . $middlename . " " . $lastname;
+
+    // $dueDate = date('Y-m-d H:i:s', strtotime("+$borrowDays days"));
+    // $cn = $row['cn'];
+
+    $insertQuery = $con->prepare("INSERT INTO borrow_book (rname, user_id, book_id, cn, number_of_days, date_borrowed, due_date, borrowed_status) VALUES (?, ?, ?, ?, ?, NOW(), ?, 'Pending Request')");
+    // $insertQuery->bind_param("siisiss", $rname, $requesterId, $bookId, $cn, $borrowDays, $borrowDaysDue, $status);
+
+
+    $insertQuery->bind_param("sisiss", $rname, $requesterId, $bookId, $cn, $borrowDays, $borrowDaysDue);
+
+    if ($insertQuery->execute()) {
+        $insertQuery->close();
+        header("Location: index.php");
+        exit();
+    } else {
+        echo "Error: " . $con->error;
+    }
+}
 
 ?>
 <!-- bakaEND -->
@@ -108,6 +146,7 @@ include("../../../../database/connection.php");
 
                                 if (!empty($booksArray)) {
                                     foreach ($booksArray as $row) {
+                                        // $cn = $row['cn'];
                                         if ($counter % $booksPerRow == 0) {
                                             if ($counter > 0) {
                                                 echo '</div>';
@@ -138,7 +177,9 @@ include("../../../../database/connection.php");
                                                     class="rounded mx-auto d-block" alt="..."
                                                     style="max-width: 200px; max-height: 300px;">
 
-                                                    <button class="btn btn-primary-none d-flex align-items-center" data-toggle="modal" data-target="#borrowModal<?php echo $row['book_id']; ?>">
+                                                <button class="btn btn-primary-none d-flex align-items-center"
+                                                    data-toggle="modal"
+                                                    data-target="#borrowModal<?php echo $row['cn']; ?>">
                                                     Borrow
                                                     <span class="material-icons">
                                                         arrow_circle_right
@@ -146,40 +187,47 @@ include("../../../../database/connection.php");
                                                 </button>
 
                                                 <!-- modal -->
-                                                <div class="modal fade" id="borrowModal<?php echo $row['book_id']; ?>" tabindex="-1" role="dialog" aria-labelledby="borrowModalLabel" aria-hidden="true">
-                                                    <div class="modal-dialog" role="document">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title" id="borrowModalLabel">Borrow Book</h5>
-                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                    <span aria-hidden="true">&times;</span>
-                                                                </button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                <p>You are about to borrow the book: <b> <?php echo $row['book_title']; ?> </b> </p>
-                                                                <div class="">
-                                                                    <p>How many days would you like to borrow the book?</p>
-                                                                    <select name="borrow_days" class="form-control" required="required" tabindex="-1">
-                                                                        <option value="" hidden>
-                                                                            
-                                                                        </option>
-                                                                        <?php
-                                                                            for ($i = 1; $i <= 7; $i++) {
-                                                                        ?>
-                                                                            <option value="<?php echo $i; ?>">
-                                                                                <?php echo $i; ?>
-                                                                            </option>
-                                                                        <?php } ?>
-                                                                    </select>
+                                                <form action="" method="post">
+                                                    <div class="modal fade" id="borrowModal<?php echo $row['cn']; ?>"
+                                                        tabindex="-1" role="dialog" aria-labelledby="borrowModalLabel"
+                                                        aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="borrowModalLabel">Borrow Book
+                                                                    </h5>
+                                                                    <button type="button" class="close" data-dismiss="modal"
+                                                                        aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
                                                                 </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary close" data-dismiss="modal" aria-label="Close">Close</button>
-                                                                <button type="button" class="btn btn-primary" name="borrow">Borrow</button>
+                                                                <!-- Dito. HAHAHAAH -->
+                                                                <div class="modal-body">
+                                                                    <p>You are about to borrow the book: <b>
+                                                                            <?php echo $row['book_title']; ?>
+                                                                        </b> </p>
+                                                                    <div class="">
+                                                                        <p>How many days would you like to borrow the book?</p>
+
+                                                                        <input type="hidden" name="cn" value="<?php echo $row['cn']?>">
+
+                                                                        <input type="date" name="borrow_days">
+                                                                    </div>
+                                                                </div>
+                                                                <!-- Nandito yung button -->
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary close"
+                                                                        data-dismiss="modal" aria-label="Close">Close</button>
+
+                                                                    <input type="hidden" name="book_id"
+                                                                        value="<?php echo $row['book_id']; ?>">
+                                                                    <button type="submit" class="btn btn-primary"
+                                                                        name="borrow">Borrow</button>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </form>
 
                                             </div>
                                         </div>
